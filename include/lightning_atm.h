@@ -14,7 +14,7 @@
 // ###########    USER ACTION   ###########
 // ########################################
 // Generate and copy in LNbits with the LNURLDevice extension the string for the ATM and paste it here:
-const String lnurlDeviceString = "https://legend.lnbits.com/lnurldevice/api/v1/lnurl/idexample,keyexample,EUR";
+const String lnurlDeviceString = "https://lnbits.ereignishorizont.xyz/lnurldevice/api/v1/lnurl/QuUjK,fCfdNwwFUAkK9bqyKwFHNL,EUR";
 // #################### EXAMPLE:  https://legend.lnbits.com/lnurldevice/api/v1/lnurl/idexample,keyexample,EUR
 // ########################################
 // ########################################
@@ -32,7 +32,7 @@ const String lnurlDeviceString = "https://legend.lnbits.com/lnurldevice/api/v1/l
 //  OTHER OPTIONS:
 
 // Activate for debugging over Serial (1), deactivate in production use (0)
-#define DEBUG_MODE 0
+#define DEBUG_MODE 1
 
 #define COIN_PIN 17
 #define PULSE_TIMEOUT 200
