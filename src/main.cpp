@@ -18,7 +18,7 @@ SPIClass hspi(HSPI);
 void setup()
 {
   initialize_display(); // connection to the e-ink display
-  Serial.begin(9600);
+  Serial.begin(115200);
   // *** for Waveshare ESP32 Driver board *** //
 #if defined(ESP32) && defined(USE_HSPI_FOR_EPD)
   hspi.begin(13, 12, 14, 15); // remap hspi for EPD (swap pins)
@@ -33,6 +33,8 @@ void setup()
   }
   pinMode(COIN_PIN, INPUT_PULLUP);                          // coin acceptor input
   pinMode(LED_BUTTON_PIN, OUTPUT);                          // LED of the LED Button
+  pinMode(ARROW_LED_PIN, OUTPUT);                           // LED for arrow
+  digitalWrite(ARROW_LED_PIN, LOW);                            // set it low to accept coins, high to block coins
   pinMode(BUTTON_PIN, INPUT_PULLUP);                        // Button
   pinMode(MOSFET_PIN, OUTPUT);                              // mosfet relay to block the coin acceptor
   digitalWrite(MOSFET_PIN, LOW);                            // set it low to accept coins, high to block coins
@@ -123,14 +125,16 @@ void wait_for_user_to_scan()
   Serial.println("wait for user to press button or 10 minutes to go back to home screen");
   while (!button_pressed && (millis() - time) < 600000)
   {
-    if (!light_on && (millis() - time) > 30000)
+    if (!light_on && (millis() - time) > 5000)
     {
       digitalWrite(LED_BUTTON_PIN, HIGH);
+      digitalWrite(ARROW_LED_PIN, HIGH);
       light_on = true;
     }
-    else if (light_on && (millis() - time) > 30000)
+    else if (light_on && (millis() - time) > 5000)
     {
       digitalWrite(LED_BUTTON_PIN, LOW);
+      digitalWrite(ARROW_LED_PIN, LOW);
       light_on = false;
     }
     delay(500);

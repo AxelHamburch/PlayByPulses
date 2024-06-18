@@ -37,6 +37,7 @@ const String lnurlDeviceString = "https://lnbits.ereignishorizont.xyz/lnurldevic
 #define COIN_PIN 17
 #define PULSE_TIMEOUT 200
 #define LED_BUTTON_PIN 21  // old: 13 | new: 21
+#define ARROW_LED_PIN 22 // for MüFW 63
 #define BUTTON_PIN 32
 #define MOSFET_PIN 16  // old: 12 | new: 16
 #define QR_VERSION 6  // 20 is standard. 6 for simpler QR code, but does not always work.
