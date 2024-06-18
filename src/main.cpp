@@ -125,13 +125,13 @@ void wait_for_user_to_scan()
   Serial.println("wait for user to press button or 10 minutes to go back to home screen");
   while (!button_pressed && (millis() - time) < 600000)
   {
-    if (!light_on && (millis() - time) > 5000)
+    if (!light_on && (millis() - time) > 20000)
     {
       digitalWrite(LED_BUTTON_PIN, HIGH);
       digitalWrite(ARROW_LED_PIN, HIGH);
       light_on = true;
     }
-    else if (light_on && (millis() - time) > 5000)
+    else if (light_on && (millis() - time) > 20000)
     {
       digitalWrite(LED_BUTTON_PIN, LOW);
       digitalWrite(ARROW_LED_PIN, LOW);
