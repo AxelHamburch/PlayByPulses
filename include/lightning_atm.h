@@ -14,7 +14,7 @@
 // ###########    USER ACTION   ###########
 // ########################################
 // Generate and copy in LNbits with the LNURLDevice extension the string for the ATM and paste it here:
-const String lnurlDeviceString = "https://lnbits.ereignishorizont.xyz/lnurldevice/api/v1/lnurl/46cyT,26Nz6oU6iKHQyAN6VmKLZZ,EUR";
+const String lnurlDeviceString = "https://legend.lnbits.com/lnurldevice/api/v1/lnurl/idexample,keyexample,EUR";
 // #################### EXAMPLE:  https://legend.lnbits.com/lnurldevice/api/v1/lnurl/idexample,keyexample,EUR
 // ########################################
 // ########################################
