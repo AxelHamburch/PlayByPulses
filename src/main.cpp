@@ -8,6 +8,12 @@ String baseURLATM;
 String secretATM;
 String currencyATM;
 
+// ### axel ###
+bool flash = false;
+TaskHandle_t Task1;
+bool start_payout = false;
+unsigned long long time2;
+
 // *** for Waveshare ESP32 Driver board *** //
 #if defined(ESP32) && defined(USE_HSPI_FOR_EPD)
 SPIClass hspi(HSPI);
@@ -15,10 +21,44 @@ SPIClass hspi(HSPI);
 // *** end Waveshare ESP32 Driver board *** //
 
 
+// Task1code: blinks an LED every 1000 ms
+void Task1code(void* pvParameters) {
+  Serial.print("Task1 running on core ");
+  Serial.println(xPortGetCoreID());
+
+  for (;;) {
+    flash = !flash;  // Toggle the flash variable
+    delay(1000);
+  }
+}
+
+// Function to update the ARROW_LED_PIN based on the flash value
+void updateArrowLed() {
+  digitalWrite(ARROW_LED_PIN, flash ? HIGH : LOW);
+  // to activate: updateArrowLed();
+}
+
 void setup()
 {
   initialize_display(); // connection to the e-ink display
   Serial.begin(115200);
+
+  // Initialize the LED pin as an output
+  pinMode(ARROW_LED_PIN, OUTPUT);
+
+  //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
+  xTaskCreatePinnedToCore(
+    Task1code,   /* Task function. */
+    "Task1",     /* name of task. */
+    10000,       /* Stack size of task */
+    NULL,        /* parameter of the task */
+    1,           /* priority of the task */
+    &Task1,      /* Task handle to keep track of created task */
+    0);          /* pin task to core 0 */
+  delay(500);
+
+
+
   // *** for Waveshare ESP32 Driver board *** //
 #if defined(ESP32) && defined(USE_HSPI_FOR_EPD)
   hspi.begin(13, 12, 14, 15); // remap hspi for EPD (swap pins)
@@ -33,8 +73,6 @@ void setup()
   }
   pinMode(COIN_PIN, INPUT_PULLUP);                          // coin acceptor input
   pinMode(LED_BUTTON_PIN, OUTPUT);                          // LED of the LED Button
-  pinMode(ARROW_LED_PIN, OUTPUT);                           // LED for arrow
-  digitalWrite(ARROW_LED_PIN, LOW);                            // set it low to accept coins, high to block coins
   pinMode(BUTTON_PIN, INPUT_PULLUP);                        // Button
   pinMode(MOSFET_PIN, OUTPUT);                              // mosfet relay to block the coin acceptor
   digitalWrite(MOSFET_PIN, LOW);                            // set it low to accept coins, high to block coins
@@ -51,6 +89,13 @@ void loop()
   unsigned int pulses = 0;
   unsigned long long time_last_press;
 
+  if (button_pressed)
+  {
+    start_payout = false;
+    digitalWrite(ARROW_LED_PIN, LOW);
+    Serial.println("start_payout = false");
+  }
+
   pulses = detect_coin(); // detect_coin() is a loop to detect the input of coins, will return the amount of pulses
   if (pulses >= 2 && pulses <= 9)
   {
@@ -58,6 +103,10 @@ void loop()
     digitalWrite(LED_BUTTON_PIN, LOW);
     inserted_cents += COINS[pulses];
     show_inserted_amount(inserted_cents);
+    // ### axel ###
+    Serial.println("start_payout = true");
+    start_payout = true;
+    time2 = millis();
   }
   else if (button_pressed && inserted_cents > 0)
   {
@@ -137,7 +186,7 @@ void wait_for_user_to_scan()
       digitalWrite(ARROW_LED_PIN, LOW);
       light_on = false;
     }
-    delay(500);
+    delay(1000);
   }
   Serial.println("Exit waiting");
 }
@@ -153,15 +202,20 @@ unsigned int detect_coin()
 
   if (DEBUG_MODE)
     Serial.println("Starting coin detection...");
+
   pulses = 0;
   read_value = 1;
   prev_value = digitalRead(COIN_PIN);
   digitalWrite(LED_BUTTON_PIN, HIGH);
   digitalWrite(MOSFET_PIN, LOW);
   button_pressed = false;
-  entering_time = millis();
+
   while (true && !button_pressed)
   {
+    if (start_payout && (millis() - time2) > 6000)
+    {
+      updateArrowLed();
+    }
     read_value = digitalRead(COIN_PIN);
     if (read_value != prev_value && !read_value)
     {
@@ -177,6 +231,7 @@ unsigned int detect_coin()
     current_time = millis();
     if (pulses > 0 && (current_time - last_pulse > PULSE_TIMEOUT))
     {
+      digitalWrite(ARROW_LED_PIN, LOW);
       break;
     }
     else if (pulses == 0 && ((current_time - entering_time) > 43200000) // refreshes the screen every 12h
@@ -190,6 +245,8 @@ unsigned int detect_coin()
     else if (inserted_cents > 0 && (current_time - entering_time) > 360000) // break the loop if no new coin is inserted for some time
       button_pressed = true;
   }
+  digitalWrite(ARROW_LED_PIN, LOW);
+
   if (DEBUG_MODE)
     Serial.println("Pulses: " + String(pulses));
   if (button_pressed)
