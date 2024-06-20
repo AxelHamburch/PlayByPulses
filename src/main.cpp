@@ -212,7 +212,7 @@ unsigned int detect_coin()
 
   while (true && !button_pressed)
   {
-    if (start_payout && (millis() - time2) > 6000)
+    if (start_payout && (millis() - time2) > 6000 && inserted_cents > 0)
     {
       updateArrowLed();
     }
@@ -242,8 +242,10 @@ unsigned int detect_coin()
       entering_time = millis();
       home_screen();
     }
-    else if (inserted_cents > 0 && (current_time - entering_time) > 360000) // break the loop if no new coin is inserted for some time
+    else if (inserted_cents > 0 && (current_time - entering_time) > 360000) // 360000 break the loop if no new coin is inserted for some time
+    {
       button_pressed = true;
+    }
   }
   digitalWrite(ARROW_LED_PIN, LOW);
 
@@ -732,20 +734,20 @@ void home_screen_waveshare_2_13()
   display.setFullWindow();
   display.firstPage();
 
-  display.setCursor(5, 5);
+  display.setCursor(5, 10);
   display.setTextSize(2);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
   display.println("LIGHTNING ATM");
-  display.setCursor(3, 33);
-  display.println("Insert coins");
-  display.setCursor(3, 50);
-  display.println("on the right");
-  display.setCursor(3, 67);
-  display.println("side to start");
+  display.setCursor(3, 38);
+  display.println("Werfe Geld in");
+  display.setCursor(3, 55);
+  display.println("den 50 Pfenning");
+  display.setCursor(3, 73);
+  display.println("Schlitz ein!");
 
   display.drawBitmap(180, 15, bitcoin_logo, 64, 64, GxEPD_BLACK);
 
-  display.setCursor(0, 95);
+  display.setCursor(0, 98);
   display.setTextSize(1);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
   display.println(" Prepare Lightning enabled Bitcoin\n wallet before starting!\n Supported coins: 2 cent to 2 euro");
@@ -759,10 +761,10 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.setFullWindow();
   display.firstPage();
 
-  display.setCursor(10, 4);
+  display.setCursor(0, 10);
   display.setTextSize(2);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
-  display.println("Inserted amount:");
+  display.println(" Bisher eingeworfen:");
 
   display.setCursor(35, 45);
   display.setTextSize(3);
@@ -772,7 +774,7 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.setCursor(0, 85);
   display.setTextSize(2);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
-  display.println(" Press button\n to show QR code");
+  display.println(" Drueck den Button\n fuer den QR code");
 
   display.nextPage();
 }
@@ -804,19 +806,19 @@ void qr_withdrawl_screen_waveshare_2_13(const char* qr_content)
           qr.start_y + qr.module_size * qr.current_y, qr.module_size, qr.module_size, GxEPD_WHITE);
     }
   }
-  display.setCursor(0, 20);
+  display.setCursor(0, 23);
   display.setTextSize(2);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
-  display.println(" Scan\n\n  QR\n\n code");  // top message
+  display.println(" Scan\n\n  QR\n\n Code");  // top message
 
-  display.setCursor(181, 32);
+  display.setCursor(181, 30);
   display.setTextSize(2);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
   display.println("Reset");
-  display.setCursor(181, 53);
-  display.println("press");
-  display.setCursor(176, 77);
-  display.println("button");
+  display.setCursor(175, 51);
+  display.println("drueck");
+  display.setCursor(177, 75);
+  display.println("Taste");
   display.nextPage();
   display.hibernate();
 }
