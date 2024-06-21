@@ -174,13 +174,13 @@ void wait_for_user_to_scan()
   Serial.println("wait for user to press button or 10 minutes to go back to home screen");
   while (!button_pressed && (millis() - time) < 600000)
   {
-    if (!light_on && (millis() - time) > 20000)
+    if (!light_on && (millis() - time) > 30000)
     {
       digitalWrite(LED_BUTTON_PIN, HIGH);
       digitalWrite(ARROW_LED_PIN, HIGH);
       light_on = true;
     }
-    else if (light_on && (millis() - time) > 20000)
+    else if (light_on && (millis() - time) > 30000)
     {
       digitalWrite(LED_BUTTON_PIN, LOW);
       digitalWrite(ARROW_LED_PIN, LOW);
@@ -753,6 +753,7 @@ void home_screen_waveshare_2_13()
   display.println(" Prepare Lightning enabled Bitcoin\n wallet before starting!\n Supported coins: 2 cent to 2 euro");
   display.nextPage();
   display.hibernate();
+  delay(3000);
 }
 
 void show_inserted_amount_waveshare_2_13(String amount_in_euro)
