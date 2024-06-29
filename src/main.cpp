@@ -741,7 +741,7 @@ void home_screen_waveshare_2_13()
   display.setCursor(3, 38);
   display.println("Werfe Geld in");
   display.setCursor(3, 55);
-  display.println("den 50 Pfenning");
+  display.println("den 50 Pfennig");
   display.setCursor(3, 73);
   display.println("Schlitz ein!");
 
@@ -750,10 +750,9 @@ void home_screen_waveshare_2_13()
   display.setCursor(0, 98);
   display.setTextSize(1);
   display.setTextColor(GxEPD_BLACK, GxEPD_WHITE);
-  display.println(" Prepare Lightning enabled Bitcoin\n wallet before starting!\n Supported coins: 2 cent to 2 euro");
+  display.println(" Prepare Lightning enabled Bitcoin\n wallet before starting!\n Supported coins: 1 cent to 2 euro");
   display.nextPage();
   display.hibernate();
-  delay(3000);
 }
 
 void show_inserted_amount_waveshare_2_13(String amount_in_euro)
@@ -778,6 +777,10 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.println(" Drueck den Button\n fuer den QR code");
 
   display.nextPage();
+
+  // Verzögerung damit der Button nicht zu früh kommt
+  delay(100);
+  button_pressed = false;
 }
 
 void qr_withdrawl_screen_waveshare_2_13(const char* qr_content)
