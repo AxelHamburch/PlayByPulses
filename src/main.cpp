@@ -225,6 +225,7 @@ unsigned int detect_coin()
       {
         pulses++;
         last_pulse = millis();
+        digitalWrite(MOSFET_PIN, HIGH);
       }
     }
     prev_value = read_value;
@@ -779,7 +780,7 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.nextPage();
 
   // delay to ignore button during actualisation
-  delay(100);
+  delay(500);
   button_pressed = false;
 }
 
