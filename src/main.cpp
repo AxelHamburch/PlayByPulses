@@ -73,7 +73,7 @@ void setup()
   }
   pinMode(COIN_PIN, INPUT_PULLUP);                          // coin acceptor input
   pinMode(LED_BUTTON_PIN, OUTPUT);                          // LED of the LED Button
-  pinMode(BUTTON_PIN, INPUT_PULLUP);                        // Button
+  pinMode(BUTTON_PIN, INPUT);                        // Button
   pinMode(MOSFET_PIN, OUTPUT);                              // mosfet relay to block the coin acceptor
   digitalWrite(MOSFET_PIN, LOW);                            // set it low to accept coins, high to block coins
   attachInterrupt(BUTTON_PIN, button_pressed_itr, FALLING); // interrupt, will set button_pressed to true when button is pressed
@@ -780,8 +780,8 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.nextPage();
 
   // delay to ignore button during actualisation
-  delay(500);
-  button_pressed = false;
+  // delay(500);
+  // button_pressed = false;
 }
 
 void qr_withdrawl_screen_waveshare_2_13(const char* qr_content)
