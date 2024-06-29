@@ -209,7 +209,7 @@ unsigned int detect_coin()
   digitalWrite(LED_BUTTON_PIN, HIGH);
   digitalWrite(MOSFET_PIN, LOW);
   button_pressed = false;
-
+  entering_time = millis();
   while (true && !button_pressed)
   {
     if (start_payout && (millis() - time2) > 6000 && inserted_cents > 0)
