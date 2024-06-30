@@ -779,9 +779,6 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
 
   display.nextPage();
 
-  // delay to ignore button during actualisation
-  delay(100);
-  button_pressed = false;
 }
 
 void qr_withdrawl_screen_waveshare_2_13(const char* qr_content)
