@@ -3,7 +3,7 @@
 #include "HardwareSerial.h"
 
 #define PULSE_PIN 15
-#define PULSE_TIMEOUT 2000
+#define PULSE_TIMEOUT 500
 
 HardwareSerial SerialPort2(2); // use UART2
 DFRobotDFPlayerMini myDFPlayer;
@@ -137,7 +137,6 @@ unsigned int detect_pulses()
     {
       break;
     }
-
   }
   return (pulses);
 }
@@ -172,6 +171,9 @@ void loop()
     Serial.println("Start DFPlayer mit Nr.2");
   }
 
+  if (myDFPlayer.available()) {
+    printDetail(myDFPlayer.readType(), myDFPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
+  }
 }
 
 
