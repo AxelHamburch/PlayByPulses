@@ -3,7 +3,7 @@
 #include "HardwareSerial.h"
 
 #define PULSE_PIN 15
-#define PULSE_TIMEOUT 200
+#define PULSE_TIMEOUT 2000
 
 HardwareSerial SerialPort2(2); // use UART2
 DFRobotDFPlayerMini myDFPlayer;
@@ -18,7 +18,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  pinMode(PULSE_PIN, INPUT_PULLUP);                          // coin acceptor input
+  pinMode(PULSE_PIN, INPUT_PULLUP);                          // pulses input
 
   // Initialisiere DFPlayer
   SerialPort2.begin(9600, SERIAL_8N1, 16, 17);
@@ -34,7 +34,7 @@ void setup()
     }
   }
   Serial.println(F("DFPlayer Mini Startklar"));
-  myDFPlayer.volume(25);  //Einstellung Lautstärke zwischen 0 bis max 30
+  myDFPlayer.volume(30);  //Einstellung Lautstärke zwischen 0 bis max 30
 }
 
 
@@ -111,7 +111,7 @@ unsigned int detect_pulses()
   unsigned long entering_time;
   unsigned long current_time;
 
-  Serial.println("Starting coin detection...");
+  Serial.println("Starting pulse detection...");
 
   pulses = 0;
   read_value = 1;
@@ -158,15 +158,15 @@ void loop()
 
 
   unsigned int pulses = 0;
-  unsigned long long time_last_press;
 
   pulses = detect_pulses(); // is a loop to detect pulses, will return the amount of pulses
-  if (pulses >= 1 && pulses <= 5)
+  Serial.println("Pulses: " + String(pulses));
+  if (pulses >= 1 && pulses <= 1)
   {
     myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
     Serial.println("Start DFPlayer mit Nr.1");
   }
-  else if (pulses >= 6 && pulses <= 10)
+  else if (pulses >= 2 && pulses <= 10)
   {
     myDFPlayer.play(2);  //Spiele mp3 Datei Nummer 2
     Serial.println("Start DFPlayer mit Nr.2");
