@@ -1,5 +1,18 @@
 #include "lightning_atm.h"
 
+// für dflplayer
+#include "DFRobotDFPlayerMini.h"
+#include "HardwareSerial.h"
+
+HardwareSerial SerialPort2(2); // use UART2
+DFRobotDFPlayerMini myDFPlayer;
+
+// Touch PIN 4
+const int touchPin = 4;
+const int threshold = 20;
+int touchValue;
+
+
 const unsigned int COINS[] = { 0, 0, 5, 10, 20, 50, 100, 200, 1, 2 };
 bool button_pressed = false;
 unsigned int inserted_cents = 0;
@@ -40,6 +53,26 @@ void updateArrowLed() {
 
 void setup()
 {
+  // für dflplayer
+  SerialPort2.begin(9600, SERIAL_8N1, 16, 17);
+  // mySoftwareSerial.begin(9600);
+  Serial.begin(115200);
+  Serial.println();
+  Serial.println(F("DFRobot DFPlayer Mini"));
+  Serial.println(F("Initialisiere DFPlayer ... (Dauert bis zu 5 Sek)"));
+
+  if (!myDFPlayer.begin(SerialPort2)) {  //Use serial to communicate with mp3.
+    Serial.println(F("Kann nicht starten: "));
+    Serial.println(F("1. Kabelverbindung pruefen"));
+    Serial.println(F("2. SD Karte korrekt vorbereitet und eingesteckt"));
+    while (true) {
+      delay(0); // Zeile wird für ESP8266 benötigt
+    }
+  }
+  Serial.println(F("DFPlayer Mini Startklar"));
+  myDFPlayer.volume(25);  //Einstellung Lautstärke zwischen 0 bis max 30
+
+
   initialize_display(); // connection to the e-ink display
   Serial.begin(115200);
 
@@ -86,6 +119,17 @@ void setup()
 
 void loop()
 {
+  // für dflplayer - Touch PIN 4 Start
+  touchValue = touchRead(touchPin);
+  if (touchValue < threshold) {
+    myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
+    delay(2000); // Touch Entpreller 
+  }
+  if (myDFPlayer.available()) {
+    printDetail(myDFPlayer.readType(), myDFPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
+  }
+
+
   unsigned int pulses = 0;
   unsigned long long time_last_press;
 
@@ -936,4 +980,66 @@ void clean_screen_waveshare_2_13_flex()
   display.firstPage();
   display.nextPage();
   display.hibernate();
+}
+
+// für dflplayer
+void printDetail(uint8_t type, int value) {
+  switch (type) {
+  case TimeOut:
+    Serial.println(F("Time Out!"));
+    break;
+  case WrongStack:
+    Serial.println(F("Stack Wrong!"));
+    break;
+  case DFPlayerCardInserted:
+    Serial.println(F("Card Inserted!"));
+    break;
+  case DFPlayerCardRemoved:
+    Serial.println(F("Card Removed!"));
+    break;
+  case DFPlayerCardOnline:
+    Serial.println(F("Card Online!"));
+    break;
+  case DFPlayerUSBInserted:
+    Serial.println("USB Inserted!");
+    break;
+  case DFPlayerUSBRemoved:
+    Serial.println("USB Removed!");
+    break;
+  case DFPlayerPlayFinished:
+    Serial.print(F("Number:"));
+    Serial.print(value);
+    Serial.println(F(" Play Finished!"));
+    break;
+  case DFPlayerError:
+    Serial.print(F("DFPlayerError:"));
+    switch (value) {
+    case Busy:
+      Serial.println(F("Card not found"));
+      break;
+    case Sleeping:
+      Serial.println(F("Sleeping"));
+      break;
+    case SerialWrongStack:
+      Serial.println(F("Get Wrong Stack"));
+      break;
+    case CheckSumNotMatch:
+      Serial.println(F("Check Sum Not Match"));
+      break;
+    case FileIndexOut:
+      Serial.println(F("File Index Out of Bound"));
+      break;
+    case FileMismatch:
+      Serial.println(F("Cannot Find File"));
+      break;
+    case Advertise:
+      Serial.println(F("In Advertise"));
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
 }
