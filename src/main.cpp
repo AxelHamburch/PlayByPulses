@@ -205,7 +205,7 @@ unsigned int detect_coin()
 
   pulses = 0;
   read_value = 1;
-  prev_value = digitalRead(COIN_PIN);
+  prev_value = !digitalRead(COIN_PIN);
   digitalWrite(LED_BUTTON_PIN, HIGH);
   digitalWrite(MOSFET_PIN, LOW);
   button_pressed = false;
@@ -216,16 +216,16 @@ unsigned int detect_coin()
     {
       updateArrowLed();
     }
-    read_value = digitalRead(COIN_PIN);
+    read_value = !digitalRead(COIN_PIN);
     if (read_value != prev_value && !read_value)
     {
       delay(35);
-      read_value = digitalRead(COIN_PIN);
+      read_value = !digitalRead(COIN_PIN);
       if (!read_value)
       {
         pulses++;
         last_pulse = millis();
-        digitalWrite(MOSFET_PIN, HIGH);
+        Serial.println("puls...");
       }
     }
     prev_value = read_value;
@@ -780,8 +780,8 @@ void show_inserted_amount_waveshare_2_13(String amount_in_euro)
   display.nextPage();
 
   // delay to ignore button during actualisation
-  // delay(500);
-  // button_pressed = false;
+  delay(100);
+  button_pressed = false;
 }
 
 void qr_withdrawl_screen_waveshare_2_13(const char* qr_content)
