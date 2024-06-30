@@ -3,9 +3,12 @@
 #include "HardwareSerial.h"
 
 #define PULSE_PIN 15
-#define PULSE_TIMEOUT 500
+#define PULSE_TIMEOUT 200
 
-HardwareSerial SerialPort2(2); // use UART2
+#define RXD2 16
+#define TXD2 17
+
+HardwareSerial SerialPort1(2); // use UART1 (UART0 is used for terminal, UART2 ist occupied)
 DFRobotDFPlayerMini myDFPlayer;
 
 // Touch PIN 4
@@ -21,11 +24,17 @@ void setup()
   pinMode(PULSE_PIN, INPUT_PULLUP);                          // pulses input
 
   // Initialisiere DFPlayer
-  SerialPort2.begin(9600, SERIAL_8N1, 16, 17);
+  SerialPort1.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Serial.println("Serial Txd0 is on pin: " + String(TX));
+  Serial.println("Serial Rxd0 is on pin: " + String(RX));
+  Serial.println("Serial Txd1 is on pin: " + String(TX1));
+  Serial.println("Serial Rxd1 is on pin: " + String(RX1));
+  Serial.println("Serial Txd2 is on pin: " + String(TX2));
+  Serial.println("Serial Rxd2 is on pin: " + String(RX2));
   Serial.println();
   Serial.println(F("DFRobot DFPlayer Mini"));
   Serial.println(F("Initialisiere DFPlayer ... (Dauert bis zu 5 Sek)"));
-  if (!myDFPlayer.begin(SerialPort2)) {  //Use serial to communicate with mp3.
+  if (!myDFPlayer.begin(SerialPort1)) {  //Use serial to communicate with mp3.
     Serial.println(F("Kann nicht starten: "));
     Serial.println(F("1. Kabelverbindung pruefen"));
     Serial.println(F("2. SD Karte korrekt vorbereitet und eingesteckt"));
@@ -122,13 +131,13 @@ unsigned int detect_pulses()
     read_value = !digitalRead(PULSE_PIN);
     if (read_value != prev_value && !read_value)
     {
-      delay(35);
+      delay(25);
       read_value = !digitalRead(PULSE_PIN);
       if (!read_value)
       {
         pulses++;
         last_pulse = millis();
-        Serial.println("pulses++");
+        Serial.println("pulse+");
       }
     }
     prev_value = read_value;
