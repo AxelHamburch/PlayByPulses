@@ -94,12 +94,12 @@ void loop()
   }
   prev_value = read_value;
 
+  // Auswertung der Pulse, spiel File des DFPlayer
   if (pulses > 0 && (current_time - last_pulse > PULSE_TIMEOUT)) {
     final_pulse_count = pulses;
     Serial.print("Total pulses: ");
     Serial.println(final_pulse_count);
     pulses = 0; // Reset für die nächste Impulsreihe
-
     // Trigger DFPlayer actions based on final_pulse_count
     if (final_pulse_count == 1) {
       myDFPlayer.play(1);  // Spiele mp3 Datei Nummer 1
@@ -109,6 +109,6 @@ void loop()
       myDFPlayer.play(2);  // Spiele mp3 Datei Nummer 2
       Serial.println("Start DFPlayer mit Nr.2");
     }
-    final_pulse_count = 0; // Hier setzen Sie die globale Variable zurück
+    final_pulse_count = 0;
   }
 }
