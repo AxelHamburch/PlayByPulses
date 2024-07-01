@@ -8,7 +8,7 @@
 #define RXD2 16
 #define TXD2 17
 
-HardwareSerial SerialPort1(2); // use UART1 (UART0 is used for terminal, UART2 ist occupied)
+HardwareSerial SerialPort1(2); // use UART2 (UART0 is used for terminal, UART1 is difficult)
 DFRobotDFPlayerMini myDFPlayer;
 
 // Touch PIN 4
