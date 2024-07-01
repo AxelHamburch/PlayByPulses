@@ -16,11 +16,25 @@ const int touchPin = 4;
 const int threshold = 20;
 int touchValue;
 
+// Zustände der Pulserkennung
+enum PulseDetectionState {
+  WAIT_FOR_PULSE,
+  DEBOUNCE,
+  PULSE_RECEIVED
+};
+// Variablen für die Pulserkennung
+PulseDetectionState currentState = WAIT_FOR_PULSE;
+unsigned long last_pulse = 0;
+unsigned int pulses = 0;
+unsigned int final_pulse_count = 0;
+bool prev_value = !digitalRead(PULSE_PIN);
+unsigned long debounce_start_time = 0;
+
 
 void setup()
 {
   Serial.begin(115200);
-
+  delay(500);
   pinMode(PULSE_PIN, INPUT_PULLUP);                          // pulses input
 
   // Initialisiere DFPlayer
@@ -47,142 +61,69 @@ void setup()
 }
 
 
-// DFPlayer Diagnose
-void printDetail(uint8_t type, int value) {
-  switch (type) {
-  case TimeOut:
-    Serial.println(F("Time Out!"));
-    break;
-  case WrongStack:
-    Serial.println(F("Stack Wrong!"));
-    break;
-  case DFPlayerCardInserted:
-    Serial.println(F("Card Inserted!"));
-    break;
-  case DFPlayerCardRemoved:
-    Serial.println(F("Card Removed!"));
-    break;
-  case DFPlayerCardOnline:
-    Serial.println(F("Card Online!"));
-    break;
-  case DFPlayerUSBInserted:
-    Serial.println("USB Inserted!");
-    break;
-  case DFPlayerUSBRemoved:
-    Serial.println("USB Removed!");
-    break;
-  case DFPlayerPlayFinished:
-    Serial.print(F("Number:"));
-    Serial.print(value);
-    Serial.println(F(" Play Finished!"));
-    break;
-  case DFPlayerError:
-    Serial.print(F("DFPlayerError:"));
-    switch (value) {
-    case Busy:
-      Serial.println(F("Card not found"));
-      break;
-    case Sleeping:
-      Serial.println(F("Sleeping"));
-      break;
-    case SerialWrongStack:
-      Serial.println(F("Get Wrong Stack"));
-      break;
-    case CheckSumNotMatch:
-      Serial.println(F("Check Sum Not Match"));
-      break;
-    case FileIndexOut:
-      Serial.println(F("File Index Out of Bound"));
-      break;
-    case FileMismatch:
-      Serial.println(F("Cannot Find File"));
-      break;
-    case Advertise:
-      Serial.println(F("In Advertise"));
-      break;
-    default:
-      break;
-    }
-    break;
-  default:
-    break;
-  }
-}
-
-
-// Pulserkennung
-unsigned int detect_pulses()
-{
-  unsigned long last_pulse;
-  unsigned int pulses;
-  bool prev_value;
-  bool read_value;
-  unsigned long entering_time;
-  unsigned long current_time;
-
-  Serial.println("Starting pulse detection...");
-
-  pulses = 0;
-  read_value = 1;
-  prev_value = !digitalRead(PULSE_PIN);
-  entering_time = millis();
-  while (true)
-  {
-    read_value = !digitalRead(PULSE_PIN);
-    if (read_value != prev_value && !read_value)
-    {
-      delay(25);
-      read_value = !digitalRead(PULSE_PIN);
-      if (!read_value)
-      {
-        pulses++;
-        last_pulse = millis();
-        Serial.println("pulse+");
-      }
-    }
-    prev_value = read_value;
-    current_time = millis();
-    if (pulses > 0 && (current_time - last_pulse > PULSE_TIMEOUT))
-    {
-      break;
-    }
-  }
-  return (pulses);
-}
-
-
 
 void loop()
 {
-  // für dflplayer - Touch PIN 4 Start
+  // DFLPlayer - Touch PIN 4 Start
   touchValue = touchRead(touchPin);
   if (touchValue < threshold) {
     myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
     delay(2000); // Touch Entpreller 
   }
-  if (myDFPlayer.available()) {
-    printDetail(myDFPlayer.readType(), myDFPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
+
+  // Pulserkennung
+  bool read_value = !digitalRead(PULSE_PIN);
+  unsigned long current_time = millis();
+  switch (currentState) {
+  case WAIT_FOR_PULSE:
+    if (read_value != prev_value && !read_value) {
+      debounce_start_time = current_time;
+      currentState = DEBOUNCE;
+    }
+    break;
+  case DEBOUNCE:
+    if (current_time - debounce_start_time >= 35) {
+      read_value = !digitalRead(PULSE_PIN);
+      if (!read_value) {
+        pulses++;
+        last_pulse = current_time;
+        Serial.println("pulse+");
+        currentState = PULSE_RECEIVED;
+      }
+      else {
+        currentState = WAIT_FOR_PULSE;
+      }
+    }
+    break;
+  case PULSE_RECEIVED:
+    if (current_time - last_pulse > PULSE_TIMEOUT) {
+      final_pulse_count = pulses;
+      Serial.print("Total pulses: ");
+      Serial.println(final_pulse_count);
+      // Reset for next pulse detection sequence
+      pulses = 0;
+      currentState = WAIT_FOR_PULSE;
+    }
+    break;
   }
+  prev_value = read_value;
 
 
-  unsigned int pulses = 0;
-
-  pulses = detect_pulses(); // is a loop to detect pulses, will return the amount of pulses
-  Serial.println("Pulses: " + String(pulses));
-  if (pulses >= 1 && pulses <= 1)
+  if (final_pulse_count >= 1 && final_pulse_count <= 1)
   {
     myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
     Serial.println("Start DFPlayer mit Nr.1");
+    Serial.println("Pulses: " + String(final_pulse_count));
+    unsigned int final_pulse_count = 0;
   }
-  else if (pulses >= 2 && pulses <= 10)
+  else if (final_pulse_count >= 2 && final_pulse_count <= 10)
   {
     myDFPlayer.play(2);  //Spiele mp3 Datei Nummer 2
     Serial.println("Start DFPlayer mit Nr.2");
+    Serial.println("Pulses: " + String(final_pulse_count));
+    unsigned int final_pulse_count = 0;
   }
 
-  if (myDFPlayer.available()) {
-    printDetail(myDFPlayer.readType(), myDFPlayer.read()); //Print the detail message from DFPlayer to handle different errors and states.
-  }
 }
 
 
