@@ -22,6 +22,7 @@ enum PulseDetectionState {
   DEBOUNCE,
   PULSE_RECEIVED
 };
+
 // Variablen für die Pulserkennung
 PulseDetectionState currentState = WAIT_FOR_PULSE;
 unsigned long last_pulse = 0;
@@ -30,12 +31,11 @@ unsigned int final_pulse_count = 0;
 bool prev_value = !digitalRead(PULSE_PIN);
 unsigned long debounce_start_time = 0;
 
-
 void setup()
 {
   Serial.begin(115200);
   delay(500);
-  pinMode(PULSE_PIN, INPUT_PULLUP);                          // pulses input
+  pinMode(PULSE_PIN, INPUT_PULLUP); // pulses input
 
   // Initialisiere DFPlayer
   SerialPort1.begin(9600, SERIAL_8N1, RXD2, TXD2);
@@ -48,27 +48,26 @@ void setup()
   Serial.println();
   Serial.println(F("DFRobot DFPlayer Mini"));
   Serial.println(F("Initialisiere DFPlayer ... (Dauert bis zu 5 Sek)"));
-  if (!myDFPlayer.begin(SerialPort1)) {  //Use serial to communicate with mp3.
+  if (!myDFPlayer.begin(SerialPort1)) {  // Use serial to communicate with mp3.
     Serial.println(F("Kann nicht starten: "));
-    Serial.println(F("1. Kabelverbindung pruefen"));
+    Serial.println(F("1. Kabelverbindung prüfen"));
     Serial.println(F("2. SD Karte korrekt vorbereitet und eingesteckt"));
     while (true) {
       delay(0); // Zeile wird nur für ESP8266 benötigt
     }
   }
   Serial.println(F("DFPlayer Mini Startklar"));
-  myDFPlayer.volume(30);  //Einstellung Lautstärke zwischen 0 bis max 30
+  myDFPlayer.volume(30);  // Einstellung Lautstärke zwischen 0 bis max 30
 }
-
-
 
 void loop()
 {
-  // DFLPlayer - Touch PIN 4 Start
+  // DFPlayer - Touch PIN 4 Start
   touchValue = touchRead(touchPin);
   if (touchValue < threshold) {
-    myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
-    delay(2000); // Touch Entpreller 
+    myDFPlayer.play(2);  // Spiele mp3 Datei Nummer 2
+    Serial.print("Touch recognized, play mp3");
+    delay(1000); // Touch Entpreller 
   }
 
   // Pulserkennung
@@ -88,43 +87,31 @@ void loop()
         pulses++;
         last_pulse = current_time;
         Serial.println("pulse+");
-        currentState = PULSE_RECEIVED;
+        currentState = WAIT_FOR_PULSE; // Zurück zu WAIT_FOR_PULSE, um weitere Impulse zu erfassen
       }
       else {
         currentState = WAIT_FOR_PULSE;
       }
     }
     break;
-  case PULSE_RECEIVED:
-    if (current_time - last_pulse > PULSE_TIMEOUT) {
-      final_pulse_count = pulses;
-      Serial.print("Total pulses: ");
-      Serial.println(final_pulse_count);
-      // Reset for next pulse detection sequence
-      pulses = 0;
-      currentState = WAIT_FOR_PULSE;
-    }
-    break;
   }
   prev_value = read_value;
 
+  if (pulses > 0 && (current_time - last_pulse > PULSE_TIMEOUT)) {
+    final_pulse_count = pulses;
+    Serial.print("Total pulses: ");
+    Serial.println(final_pulse_count);
+    pulses = 0; // Reset für die nächste Impulsreihe
 
-  if (final_pulse_count >= 1 && final_pulse_count <= 1)
-  {
-    myDFPlayer.play(1);  //Spiele mp3 Datei Nummer 1
-    Serial.println("Start DFPlayer mit Nr.1");
-    Serial.println("Pulses: " + String(final_pulse_count));
-    unsigned int final_pulse_count = 0;
+    // Trigger DFPlayer actions based on final_pulse_count
+    if (final_pulse_count == 1) {
+      myDFPlayer.play(1);  // Spiele mp3 Datei Nummer 1
+      Serial.println("Start DFPlayer mit Nr.1");
+    }
+    else if (final_pulse_count >= 2 && final_pulse_count <= 10) {
+      myDFPlayer.play(2);  // Spiele mp3 Datei Nummer 2
+      Serial.println("Start DFPlayer mit Nr.2");
+    }
+    final_pulse_count = 0; // Hier setzen Sie die globale Variable zurück
   }
-  else if (final_pulse_count >= 2 && final_pulse_count <= 10)
-  {
-    myDFPlayer.play(2);  //Spiele mp3 Datei Nummer 2
-    Serial.println("Start DFPlayer mit Nr.2");
-    Serial.println("Pulses: " + String(final_pulse_count));
-    unsigned int final_pulse_count = 0;
-  }
-
 }
-
-
-
